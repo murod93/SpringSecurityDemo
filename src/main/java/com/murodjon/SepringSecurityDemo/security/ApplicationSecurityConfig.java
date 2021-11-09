@@ -1,6 +1,7 @@
 package com.murodjon.SepringSecurityDemo.security;
 
 import com.murodjon.SepringSecurityDemo.auth.ApplicationUserService;
+import com.murodjon.SepringSecurityDemo.jwt.JwtConfig;
 import com.murodjon.SepringSecurityDemo.jwt.JwtUserNameAndPasswordAuthenticationFilter;
 import com.murodjon.SepringSecurityDemo.jwt.JwtVerifier;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import javax.crypto.SecretKey;
 import java.util.concurrent.TimeUnit;
 
 @Configuration
@@ -24,12 +26,21 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final PasswordEncoder passwordEncoder;
     private final ApplicationUserService applicationUserService;
+    private final SecretKey secretKey;
+    private final JwtConfig jwtConfig;
 
     @Autowired
-    public ApplicationSecurityConfig(PasswordEncoder passwordEncoder, ApplicationUserService applicationUserService) {
+    public ApplicationSecurityConfig(
+            PasswordEncoder passwordEncoder,
+            ApplicationUserService applicationUserService,
+            SecretKey secretKey,
+            JwtConfig jwtConfig) {
         this.passwordEncoder = passwordEncoder;
         this.applicationUserService = applicationUserService;
+        this.secretKey = secretKey;
+        this.jwtConfig = jwtConfig;
     }
+
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -38,8 +49,8 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
-                .addFilter(new JwtUserNameAndPasswordAuthenticationFilter(authenticationManager()))
-                .addFilterAfter(new JwtVerifier(), JwtUserNameAndPasswordAuthenticationFilter.class)//register filters
+                .addFilter(new JwtUserNameAndPasswordAuthenticationFilter(authenticationManager(), jwtConfig, secretKey))
+                .addFilterAfter(new JwtVerifier(secretKey, jwtConfig), JwtUserNameAndPasswordAuthenticationFilter.class)//register filters
                 .authorizeRequests()
                 .antMatchers("/", "index", "/css/*", "/js/*").permitAll()
                 .antMatchers("/api/**").hasRole(ApplicationUserRole.STUDENT.name())
