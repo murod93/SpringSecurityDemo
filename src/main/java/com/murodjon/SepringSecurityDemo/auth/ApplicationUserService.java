@@ -12,10 +12,12 @@ public class ApplicationUserService implements UserDetailsService {
 
     private final ApplicationUserDao applicationUserDao;
 
+    //region
     @Autowired
     public ApplicationUserService(@Qualifier("fake") ApplicationUserDao applicationUserDao) {
         this.applicationUserDao = applicationUserDao;
     }
+    //endregion
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
