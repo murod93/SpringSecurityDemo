@@ -2,6 +2,7 @@ package com.murodjon.SepringSecurityDemo.security;
 
 import com.murodjon.SepringSecurityDemo.auth.ApplicationUserService;
 import com.murodjon.SepringSecurityDemo.jwt.JwtUserNameAndPasswordAuthenticationFilter;
+import com.murodjon.SepringSecurityDemo.jwt.JwtVerifier;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,9 +36,10 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
         http
                 .csrf().disable()
                 .sessionManagement()
-                    .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .addFilter(new JwtUserNameAndPasswordAuthenticationFilter(authenticationManager()))
+                .addFilterAfter(new JwtVerifier(), JwtUserNameAndPasswordAuthenticationFilter.class)//register filters
                 .authorizeRequests()
                 .antMatchers("/", "index", "/css/*", "/js/*").permitAll()
                 .antMatchers("/api/**").hasRole(ApplicationUserRole.STUDENT.name())
