@@ -2,7 +2,6 @@ package com.murodjon.SepringSecurityDemo.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -22,7 +21,7 @@ public class JwtUserNameAndPasswordAuthenticationFilter extends UsernamePassword
 
     private final AuthenticationManager authenticationManager;
     private final JwtConfig jwtConfig;
-    private final SecretKey jwtSecretKey;
+    private final SecretKey secretKey;
 
 
     public JwtUserNameAndPasswordAuthenticationFilter(
@@ -32,7 +31,7 @@ public class JwtUserNameAndPasswordAuthenticationFilter extends UsernamePassword
     ) {
         this.authenticationManager = authenticationManager;
         this.jwtConfig = jwtConfig;
-        this.jwtSecretKey = secretKey;
+        this.secretKey = secretKey;
     }
 
     @Override
@@ -68,8 +67,8 @@ public class JwtUserNameAndPasswordAuthenticationFilter extends UsernamePassword
                 .setSubject(authResult.getName())// tom, linda
                 .claim("authorities", authResult.getAuthorities())
                 .setIssuedAt(new Date())
-                .setExpiration(java.sql.Date.valueOf(LocalDate.now().plusWeeks(2)))
-                .signWith(jwtSecretKey)
+                .setExpiration(java.sql.Date.valueOf(LocalDate.now().plusDays(jwtConfig.getTokenExpirationAfterDays())))
+                .signWith(secretKey)
                 .compact();
 
         response.addHeader(jwtConfig.getAuthorizationHeader(), jwtConfig.getTokenPrefix() + token);
